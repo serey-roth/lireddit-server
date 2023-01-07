@@ -5,26 +5,21 @@ import { json } from "body-parser";
 import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginLandingPageLocalDefault, } from "@apollo/server/plugin/landingPage/default";
 import { expressMiddleware } from '@apollo/server/express4';
-import { buildSchema } from "type-graphql";
-import { HelloResolver } from "./resolvers/hello";
-import { PostResolver } from "./resolvers/post";
-import { UserResolver } from "./resolvers/user";
+import PostResolver from "./resolvers/post";
+import UserResolver from "./resolvers/user";
 import session from "express-session";
 import connectRedis, { RedisStoreOptions } from "connect-redis";
 import Redis from "ioredis";
 import { COOKIE_NAME, __prod__ } from "./constants";
-import { MyContext } from "./types";
 import AppDataSource from "./AppDataSource";
+import { readFileSync } from "fs";
+import { makeExecutableSchema } from "graphql-tools";
+import { applyMiddleware } from "graphql-middleware";
+import { postMiddleware } from "./middleware/post";
+import { MyContext } from "./types";
 
 const main = async () => {
     await AppDataSource.initialize();
-
-    //set up database connection with mikroorm
-    //const orm = await MikroORM.init(mikroOrmConfig);
-    //await orm.getMigrator().up();
-
-    //const generator = orm.getSchemaGenerator();
-    //await generator.updateSchema();
 
     const app = express();
 
@@ -68,11 +63,18 @@ const main = async () => {
         resave: false,
     }));
 
+    const typeDefs = readFileSync('src/schema/schema.graphql', 
+        { encoding: 'utf-8' });
+
+    const schema = makeExecutableSchema({ typeDefs,
+        resolvers: [PostResolver, UserResolver]
+    });
+
+    const schemaWithMiddleWare = applyMiddleware(schema, postMiddleware);
+
     const apolloServer = new ApolloServer({
-        schema: await buildSchema({//set graphql schema
-            resolvers: [HelloResolver, PostResolver, UserResolver],
-            validate: false,
-        }),
+        schema: schemaWithMiddleWare,
+        includeStacktraceInErrorResponses: false, //!__prod__
         plugins: [
             ApolloServerPluginLandingPageLocalDefault({
                 includeCookies: true,
@@ -82,33 +84,18 @@ const main = async () => {
     
     await apolloServer.start();
 
-    app.use('/graphql',
-        json(), 
+    app.use('/graphql', json(), 
         expressMiddleware(apolloServer, {
             context: async ({ req, res }): Promise<MyContext> => ({ 
                 req, 
                 res,
                 redis
             }), //share context with all resolvers in the apollo server
-        })
-    );
+        }));
 
     app.listen(4040, () => {
         console.log('Server started on localhost:4040');
     });
-
-    /*const generator = orm.getSchemaGenerator();
-    await generator.updateSchema();
-
-    await RequestContext.createAsync(orm.em, async () => {
-        const post = orm.em.create(Post, {
-            title: 'My first post',
-            createdAt: "",
-            updatedAt: ""
-        });//create post object -- the same as calling the Post constructor
-    
-        await orm.em.persistAndFlush(post);
-    });*/
 };
 
 main();
