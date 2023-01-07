@@ -1,0 +1,58 @@
+input PostInput {
+    title: String!
+    text: String!
+}
+
+type Post {
+    id: Int!
+    createdAt: Int!
+    updatedAt: Int!
+    title: String!
+    creatorId: Int!
+    text: String!
+    points: Int!
+}
+
+input UsernamePasswordInput {
+    username: String!
+    password: String!
+    email: String!
+}
+
+type FieldError {
+    field: String
+    message: String
+}
+
+type UserResponse {
+    errors: [FieldError]
+    user: User
+}
+
+type User  {
+    id: Int!
+    createdAt: Int!
+    updatedAt: Int!
+    username: String!
+    password: String!
+    email: String!
+    posts: [Post]!
+}
+
+
+type Query {
+    me: User
+    posts: [Post!]
+    post(id: Int!): Post
+}
+
+type Mutation {
+    changePassword(token: String, newPassword: String!): UserResponse!
+    forgetPassword(email: String!): Boolean!
+    login(usernameOrEmail: String!, password: String!): UserResponse!
+    register(options: UsernamePasswordInput): UserResponse!
+    logout: Boolean!
+    createPost(input: PostInput): Post!
+    updatePost(id: Int!, title: String): Post
+    deletePost(id: Int!): Boolean!
+}

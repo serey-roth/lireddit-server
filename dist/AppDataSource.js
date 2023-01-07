@@ -11,7 +11,7 @@ const AppDataSource = new typeorm_1.DataSource({
     password: 'Mombytour123!?',
     logging: true,
     synchronize: true,
-    entities: [Post_1.Post, User_1.User]
+    entities: [Post_1.PostEntity, User_1.UserEntity]
 });
 exports.dataManager = AppDataSource.manager;
 exports.default = AppDataSource;

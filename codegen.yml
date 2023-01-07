@@ -1,0 +1,12 @@
+schema: ./src/schema/schema.graphql
+generates:
+  ./src/util/resolvers-types.ts:
+    config:
+      useIndexSignature: true
+      contextType: src/types#MyContext
+      mappers:
+        User: src/entities/User#UserModel
+        Post: src/entities/Post#PostModel
+    plugins:
+      - typescript
+      - typescript-resolvers

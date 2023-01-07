@@ -1,10 +1,14 @@
+import { GraphQLError } from "graphql";
+import { IMiddlewareResolver } from "graphql-middleware/dist/types";
 import { MyContext } from "../types";
-import { MiddlewareFn } from "type-graphql";
 
-export const isAuth: MiddlewareFn<MyContext> = ({ context }, next) => {
+export const isAuth: IMiddlewareResolver<any, any, MyContext> = (resolve, parent, args, context, info) => {
     if (!context.req.session.userId) {
-        throw new Error('unauthenticated')
+        throw new GraphQLError("not authenticated", {
+            extensions: {
+                code: "UNAUTHENTICATED",
+            }
+        })
     }
-
-    return next();
+    return resolve(parent, args, context, info);
 }
