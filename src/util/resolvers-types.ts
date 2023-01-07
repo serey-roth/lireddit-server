@@ -20,8 +20,8 @@ export type Scalars = {
 
 export type FieldError = {
   __typename?: 'FieldError';
-  field?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
+  field: Scalars['String'];
+  message: Scalars['String'];
 };
 
 export type Mutation = {
@@ -76,13 +76,13 @@ export type MutationUpdatePostArgs = {
 
 export type Post = {
   __typename?: 'Post';
-  createdAt: Scalars['String'];
+  createdAt: Scalars['Int'];
   creatorId: Scalars['Int'];
   id: Scalars['Int'];
   points: Scalars['Int'];
   text: Scalars['String'];
   title: Scalars['String'];
-  updatedAt: Scalars['String'];
+  updatedAt: Scalars['Int'];
 };
 
 export type PostInput = {
@@ -104,12 +104,12 @@ export type QueryPostArgs = {
 
 export type User = {
   __typename?: 'User';
-  createdAt: Scalars['String'];
+  createdAt: Scalars['Int'];
   email: Scalars['String'];
   id: Scalars['Int'];
   password: Scalars['String'];
-  posts: Array<Maybe<Post>>;
-  updatedAt: Scalars['String'];
+  posts?: Maybe<Array<Post>>;
+  updatedAt: Scalars['Int'];
   username: Scalars['String'];
 };
 
@@ -224,8 +224,8 @@ export type ResolversParentTypes = ResolversObject<{
 }>;
 
 export type FieldErrorResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['FieldError'] = ResolversParentTypes['FieldError']> = ResolversObject<{
-  field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -241,13 +241,13 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
 }>;
 
 export type PostResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Post'] = ResolversParentTypes['Post']> = ResolversObject<{
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   creatorId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   points?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -258,12 +258,12 @@ export type QueryResolvers<ContextType = MyContext, ParentType extends Resolvers
 }>;
 
 export type UserResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   password?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  posts?: Resolver<Array<Maybe<ResolversTypes['Post']>>, ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  posts?: Resolver<Maybe<Array<ResolversTypes['Post']>>, ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

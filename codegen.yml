@@ -5,8 +5,8 @@ generates:
       useIndexSignature: true
       contextType: src/types#MyContext
       mappers:
-        User: src/entities/User#UserModel
-        Post: src/entities/Post#PostModel
+        User: src/entities/User#UserEntity
+        Post: src/entities/Post#PostEntity
     plugins:
       - typescript
       - typescript-resolvers

@@ -20,8 +20,8 @@ input UsernamePasswordInput {
 }
 
 type FieldError {
-    field: String
-    message: String
+    field: String!
+    message: String!
 }
 
 type UserResponse {
@@ -36,7 +36,7 @@ type User  {
     username: String!
     password: String!
     email: String!
-    posts: [Post]!
+    posts: [Post!]
 }
 
 
@@ -50,7 +50,7 @@ type Mutation {
     changePassword(token: String, newPassword: String!): UserResponse!
     forgetPassword(email: String!): Boolean!
     login(usernameOrEmail: String!, password: String!): UserResponse!
-    register(options: UsernamePasswordInput): UserResponse!
+    register(options: UsernamePasswordInput!): UserResponse!
     logout: Boolean!
     createPost(input: PostInput): Post!
     updatePost(id: Int!, title: String): Post
