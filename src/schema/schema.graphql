@@ -5,8 +5,8 @@ input PostInput {
 
 type Post {
     id: Int!
-    createdAt: Int!
-    updatedAt: Int!
+    createdAt: String!
+    updatedAt: String!
     title: String!
     creatorId: Int!
     text: String!
@@ -31,8 +31,8 @@ type UserResponse {
 
 type User  {
     id: Int!
-    createdAt: Int!
-    updatedAt: Int!
+    createdAt: String!
+    updatedAt: String!
     username: String!
     password: String!
     email: String!
