@@ -10,15 +10,17 @@ const body_parser_1 = require("body-parser");
 const server_1 = require("@apollo/server");
 const default_1 = require("@apollo/server/plugin/landingPage/default");
 const express4_1 = require("@apollo/server/express4");
-const type_graphql_1 = require("type-graphql");
-const hello_1 = require("./resolvers/hello");
-const post_1 = require("./resolvers/post");
-const user_1 = require("./resolvers/user");
+const post_1 = __importDefault(require("./resolvers/post"));
+const user_1 = __importDefault(require("./resolvers/user"));
 const express_session_1 = __importDefault(require("express-session"));
 const connect_redis_1 = __importDefault(require("connect-redis"));
 const ioredis_1 = __importDefault(require("ioredis"));
 const constants_1 = require("./constants");
 const AppDataSource_1 = __importDefault(require("./AppDataSource"));
+const fs_1 = require("fs");
+const graphql_tools_1 = require("graphql-tools");
+const graphql_middleware_1 = require("graphql-middleware");
+const post_2 = require("./middleware/post");
 const main = async () => {
     await AppDataSource_1.default.initialize();
     const app = (0, express_1.default)();
@@ -55,18 +57,15 @@ const main = async () => {
         secret: "keyboard cat",
         resave: false,
     }));
+    const typeDefs = (0, fs_1.readFileSync)('src/schema/schema.graphql', { encoding: 'utf-8' });
+    const schema = (0, graphql_tools_1.makeExecutableSchema)({ typeDefs,
+        resolvers: [post_1.default, user_1.default]
+    });
+    const schemaWithMiddleWare = (0, graphql_middleware_1.applyMiddleware)(schema, post_2.postMiddleware);
     const apolloServer = new server_1.ApolloServer({
-        schema: await (0, type_graphql_1.buildSchema)({
-            resolvers: [hello_1.HelloResolver, post_1.PostResolver, user_1.UserResolver],
-            validate: false,
-        }),
+        schema: schemaWithMiddleWare,
+        includeStacktraceInErrorResponses: false,
         plugins: [
-            {
-                async unexpectedErrorProcessingRequest({ requestContext }) {
-                    console.log(requestContext.errors?.[0].nodes);
-                    console.log('hi');
-                }
-            },
             (0, default_1.ApolloServerPluginLandingPageLocalDefault)({
                 includeCookies: true,
             }),

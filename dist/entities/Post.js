@@ -9,11 +9,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Post = void 0;
-const type_graphql_1 = require("type-graphql");
+exports.PostEntity = void 0;
 const typeorm_1 = require("typeorm");
 const User_1 = require("./User");
-let Post = class Post {
+let PostEntity = class PostEntity {
     id;
     createdAt;
     updatedAt;
@@ -24,47 +23,39 @@ let Post = class Post {
     points;
 };
 __decorate([
-    (0, type_graphql_1.Field)(() => type_graphql_1.Int),
     (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)
-], Post.prototype, "id", void 0);
+], PostEntity.prototype, "id", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(() => String),
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
-], Post.prototype, "createdAt", void 0);
+], PostEntity.prototype, "createdAt", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(() => String),
     (0, typeorm_1.UpdateDateColumn)(),
     __metadata("design:type", Date)
-], Post.prototype, "updatedAt", void 0);
+], PostEntity.prototype, "updatedAt", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(),
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], Post.prototype, "title", void 0);
+], PostEntity.prototype, "title", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(),
     (0, typeorm_1.Column)(),
     __metadata("design:type", Number)
-], Post.prototype, "creatorId", void 0);
+], PostEntity.prototype, "creatorId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => User_1.User, (user) => user.posts),
-    __metadata("design:type", User_1.User)
-], Post.prototype, "creator", void 0);
+    (0, typeorm_1.ManyToOne)(() => User_1.UserEntity, (user) => user.posts),
+    __metadata("design:type", User_1.UserEntity)
+], PostEntity.prototype, "creator", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(),
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], Post.prototype, "text", void 0);
+], PostEntity.prototype, "text", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(),
     (0, typeorm_1.Column)({ type: "int", default: 0 }),
     __metadata("design:type", Number)
-], Post.prototype, "points", void 0);
-Post = __decorate([
-    (0, type_graphql_1.ObjectType)(),
+], PostEntity.prototype, "points", void 0);
+PostEntity = __decorate([
     (0, typeorm_1.Entity)()
-], Post);
-exports.Post = Post;
+], PostEntity);
+exports.PostEntity = PostEntity;
 //# sourceMappingURL=Post.js.map
