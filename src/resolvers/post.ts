@@ -53,7 +53,11 @@ const PostResolver: Resolvers = {
             await dataManager.delete(Post, id);
             return true;
         } 
-    }   
+    },
+    Post: {
+        //this would be a field resolver for type-graphql
+        textSnippet: (post) => post.text.slice(0, 50), 
+    }
 }
 
 export default PostResolver;

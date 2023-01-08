@@ -72,6 +72,9 @@ const PostResolver = {
             await AppDataSource_1.dataManager.delete(Post_1.PostEntity, id);
             return true;
         }
+    },
+    Post: {
+        textSnippet: (post) => post.text.slice(0, 50),
     }
 };
 exports.default = PostResolver;
