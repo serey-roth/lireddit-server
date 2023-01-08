@@ -13,6 +13,7 @@ type Post {
     text: String!
     points: Int!
     textSnippet: String!
+    voteStatus: Int
 }
 
 type PaginatedPosts {

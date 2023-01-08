@@ -6,37 +6,52 @@ import { Updoot } from "../entities/Updoot";
 const PostResolver: Resolvers = { 
     Query: {
         //cursor is the starting point to execute pagination
-        async posts(_, { limit, cursor }) {
+        async posts(_, { limit, cursor }, { req }) {
             const realLimit = Math.min(50, limit);
             const paginatedLimit = Math.min(50, limit) + 1;//for hasMore
             
-            /* raw sql for fetching paginated posts       
-             const replacements: any[] = [paginatedLimit]
+            // raw sql for fetching paginated posts       
+            const replacements: any[] = [paginatedLimit, req.session.userId];
             if (cursor) replacements.push(cursor);
-            const results = await AppDataSource.query(`
+
+            //if we don't use json_build_object, all the creator data appear in the 
+            //top level of post
+            const posts = await AppDataSource.query(`
                 select p.*,
-                //if we don't use this, all the creator data appear in the 
-                //top level of post
                 json_build_object( 
                     'id', u.id,
                     'username', u.username,
                     'email', u.email
-                ) creator
+                ) creator,
+                ${
+                    req.session.userId ? 
+                    '(select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus"' :
+                    'null as "voteStatus"'
+                }
                 from post_entity p
                 inner join user_entity u on u.id = p."creatorId"
-                ${cursor ? `where p."createdAt" < $2` : ''}
+                ${cursor ? `where p."createdAt" < $3` : ''}
                 order by p."createdAt" DESC
                 limit $1
-            `, replacements); */
+            `, replacements);
             
-            const query = AppDataSource
+            /* const query = AppDataSource
             .getRepository(Post)
             .createQueryBuilder("post")
+            .select("post.id", "id")
             .innerJoinAndSelect(
                 "post.creator",
                 "u",
                 'post."creatorId" = u.id', //join the user id to creatorId in post
             )
+            .addSelect((qb) => {
+                return qb
+                .select("vote.value")
+                .from(Updoot, "vote")
+                .where('"userId" = :userId')
+                .andWhere('"postId" = post.id')
+            }, "voteStatus")
+            .setParameters({ userId: req.session.userId })
             .orderBy('post."createdAt"', "DESC")
             .limit(paginatedLimit) //take won't work with innerjoin
 
@@ -46,7 +61,7 @@ const PostResolver: Resolvers = {
                 })
             }
 
-            const posts = await query.getMany();
+            const posts = await query.getRawAndEntities() */
 
             return {
                 posts: posts.slice(0, realLimit),
