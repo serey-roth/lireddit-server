@@ -8,6 +8,7 @@ const typeorm_1 = require("typeorm");
 const Post_1 = require("./entities/Post");
 const User_1 = require("./entities/User");
 const path_1 = __importDefault(require("path"));
+const Updoot_1 = require("./entities/Updoot");
 const AppDataSource = new typeorm_1.DataSource({
     type: 'postgres',
     database: 'lireddit',
@@ -16,7 +17,7 @@ const AppDataSource = new typeorm_1.DataSource({
     logging: true,
     synchronize: true,
     migrations: [path_1.default.join(__dirname, '/migrations/*')],
-    entities: [Post_1.PostEntity, User_1.UserEntity]
+    entities: [Post_1.PostEntity, User_1.UserEntity, Updoot_1.Updoot]
 });
 exports.dataManager = AppDataSource.manager;
 exports.default = AppDataSource;
