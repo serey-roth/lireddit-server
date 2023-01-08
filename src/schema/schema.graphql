@@ -9,6 +9,7 @@ type Post {
     updatedAt: String!
     title: String!
     creatorId: Int!
+    creator: User!
     text: String!
     points: Int!
     textSnippet: String!
@@ -44,7 +45,6 @@ type User  {
     email: String!
     posts: [Post!]
 }
-
 
 type Query {
     me: User
