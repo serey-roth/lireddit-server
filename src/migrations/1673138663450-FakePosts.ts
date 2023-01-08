@@ -2,6 +2,7 @@ import { MigrationInterface, QueryRunner } from "typeorm"
 
 export class FakePosts1673138663455 implements MigrationInterface {
 
+    //fake data from mockaroo
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
         insert into post_entity (title, text, "creatorId") values ('Bedknobs and Broomsticks', 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.
