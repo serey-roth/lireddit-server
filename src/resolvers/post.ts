@@ -7,11 +7,12 @@ const PostResolver: Resolvers = {
         //cursor is the starting point to execute pagination
         async posts(_, { limit, cursor }) {
             const realLimit = Math.min(50, limit);
+            const paginatedLimit = Math.min(50, limit) + 1;//for hasMore
             const query = AppDataSource
             .getRepository(Post)
             .createQueryBuilder("p")
             .orderBy('"createdAt"', "DESC")
-            .take(realLimit)
+            .take(paginatedLimit)
 
             if (cursor) {
                 query.where('"createdAt" < :cursor', { //get the next post from cursor
@@ -19,7 +20,12 @@ const PostResolver: Resolvers = {
                 })
             }
 
-            return query.getMany();
+            const posts = await query.getMany();
+
+            return {
+                posts: posts.slice(0, realLimit),
+                hasMore: posts.length === paginatedLimit,
+            };
         },
         post(_, args) {
             return dataManager.findOneBy(Post, { id: args.id });    

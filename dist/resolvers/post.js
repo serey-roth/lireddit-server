@@ -29,17 +29,22 @@ const PostResolver = {
     Query: {
         async posts(_, { limit, cursor }) {
             const realLimit = Math.min(50, limit);
+            const paginatedLimit = Math.min(50, limit) + 1;
             const query = AppDataSource_1.default
                 .getRepository(Post_1.PostEntity)
                 .createQueryBuilder("p")
                 .orderBy('"createdAt"', "DESC")
-                .take(realLimit);
+                .take(paginatedLimit);
             if (cursor) {
                 query.where('"createdAt" < :cursor', {
                     cursor: new Date(parseInt(cursor)),
                 });
             }
-            return query.getMany();
+            const posts = await query.getMany();
+            return {
+                posts: posts.slice(0, realLimit),
+                hasMore: posts.length === paginatedLimit,
+            };
         },
         post(_, args) {
             return AppDataSource_1.dataManager.findOneBy(Post_1.PostEntity, { id: args.id });
