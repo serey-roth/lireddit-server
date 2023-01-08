@@ -25,6 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Post_1 = require("../entities/Post");
 const AppDataSource_1 = __importStar(require("../AppDataSource"));
+const Updoot_1 = require("../entities/Updoot");
 const PostResolver = {
     Query: {
         async posts(_, { limit, cursor }) {
@@ -77,6 +78,27 @@ const PostResolver = {
         async deletePost(_, { id }) {
             await AppDataSource_1.dataManager.delete(Post_1.PostEntity, id);
             return true;
+        },
+        async vote(_, { postId, value }, { req }) {
+            const isUpdoot = value !== -1;
+            const realValue = isUpdoot ? 1 : -1;
+            const { userId } = req.session;
+            const updoot = AppDataSource_1.dataManager.create(Updoot_1.Updoot, {
+                value: realValue,
+                userId,
+                postId
+            });
+            try {
+                await AppDataSource_1.dataManager.transaction(async (entityManager) => {
+                    await entityManager.save(updoot);
+                    await entityManager.increment(Post_1.PostEntity, { id: postId }, "points", realValue);
+                });
+                return true;
+            }
+            catch (error) {
+                console.log(error.message);
+                return false;
+            }
         }
     },
     Post: {

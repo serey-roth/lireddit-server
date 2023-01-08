@@ -1,6 +1,7 @@
 import { PostEntity as Post } from "../entities/Post";
 import AppDataSource, { dataManager } from '../AppDataSource';
 import { Resolvers } from "../util/resolvers-types";
+import { Updoot } from "../entities/Updoot";
 
 const PostResolver: Resolvers = { 
     Query: {
@@ -83,7 +84,42 @@ const PostResolver: Resolvers = {
         async deletePost(_, { id }) {
             await dataManager.delete(Post, id);
             return true;
-        } 
+        },
+        async vote(_, { postId, value }, { req }) {
+            const isUpdoot = value !== -1;
+            const realValue = isUpdoot ? 1 : -1;
+            const { userId } = req.session;
+            const updoot = dataManager.create(Updoot, {
+                value: realValue,
+                userId,
+                postId
+            });
+            try {
+                /* raw sql
+                    query(`
+                    START TRANSACTION
+                        insert into updoot ("userId", "postId", "value")
+                        values ($1, $2, $3)
+                        update post_entity
+                        set points = points + $4
+                        where post_entity.id = $5
+                    COMMIT
+                    `, [userId, postId, realValue, realValue, postId])
+                */
+                await dataManager.transaction(async (entityManager) => {
+                    await entityManager.save(updoot);
+                    await entityManager.increment(Post, 
+                        { id: postId }, 
+                        "points",
+                        realValue
+                    );
+                })
+                return true;
+            } catch (error) {
+                console.log(error.message);
+                return false;
+            }
+        }
     },
     Post: {
         //this would be a field resolver for type-graphql
