@@ -8,6 +8,19 @@ import { dataManager } from "../AppDataSource";
 import { Resolvers } from "src/util/resolvers-types";
 
 const UserResolver: Resolvers = {
+    User: {
+        //hide email from someone who's not the owner of this email
+        email: (user, _, { req }) => {
+            //this is current user and it's ok to show them their own email
+            if (req.session.userId === user.id) {
+                return user.email;
+            } 
+            // current user wants to see someone else's email
+            else {
+                return "";
+            }
+        }
+    },
     Query: {
         me(_, __, { req }) {
             if (!req.session.userId) {

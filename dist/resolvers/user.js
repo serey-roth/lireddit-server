@@ -11,6 +11,16 @@ const sendEmail_1 = require("../util/sendEmail");
 const uuid_1 = require("uuid");
 const AppDataSource_1 = require("../AppDataSource");
 const UserResolver = {
+    User: {
+        email: (user, _, { req }) => {
+            if (req.session.userId === user.id) {
+                return user.email;
+            }
+            else {
+                return "";
+            }
+        }
+    },
     Query: {
         me(_, __, { req }) {
             if (!req.session.userId) {
