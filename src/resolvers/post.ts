@@ -8,14 +8,39 @@ const PostResolver: Resolvers = {
         async posts(_, { limit, cursor }) {
             const realLimit = Math.min(50, limit);
             const paginatedLimit = Math.min(50, limit) + 1;//for hasMore
+            
+            /* raw sql for fetching paginated posts       
+             const replacements: any[] = [paginatedLimit]
+            if (cursor) replacements.push(cursor);
+            const results = await AppDataSource.query(`
+                select p.*,
+                //if we don't use this, all the creator data appear in the 
+                //top level of post
+                json_build_object( 
+                    'id', u.id,
+                    'username', u.username,
+                    'email', u.email
+                ) creator
+                from post_entity p
+                inner join user_entity u on u.id = p."creatorId"
+                ${cursor ? `where p."createdAt" < $2` : ''}
+                order by p."createdAt" DESC
+                limit $1
+            `, replacements); */
+            
             const query = AppDataSource
             .getRepository(Post)
-            .createQueryBuilder("p")
-            .orderBy('"createdAt"', "DESC")
-            .take(paginatedLimit)
+            .createQueryBuilder("post")
+            .innerJoinAndSelect(
+                "post.creator",
+                "u",
+                'post."creatorId" = u.id', //join the user id to creatorId in post
+            )
+            .orderBy('post."createdAt"', "DESC")
+            .limit(paginatedLimit) //take won't work with innerjoin
 
             if (cursor) {
-                query.where('"createdAt" < :cursor', { //get the next post from cursor
+                query.where('post."createdAt" < :cursor', { //get the next post from cursor
                     cursor: new Date(parseInt(cursor)),
                 })
             }

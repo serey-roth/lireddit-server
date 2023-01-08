@@ -32,11 +32,12 @@ const PostResolver = {
             const paginatedLimit = Math.min(50, limit) + 1;
             const query = AppDataSource_1.default
                 .getRepository(Post_1.PostEntity)
-                .createQueryBuilder("p")
-                .orderBy('"createdAt"', "DESC")
-                .take(paginatedLimit);
+                .createQueryBuilder("post")
+                .innerJoinAndSelect("post.creator", "u", 'post."creatorId" = u.id')
+                .orderBy('post."createdAt"', "DESC")
+                .limit(paginatedLimit);
             if (cursor) {
-                query.where('"createdAt" < :cursor', {
+                query.where('post."createdAt" < :cursor', {
                     cursor: new Date(parseInt(cursor)),
                 });
             }
