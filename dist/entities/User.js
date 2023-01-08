@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserEntity = void 0;
 const typeorm_1 = require("typeorm");
 const Post_1 = require("./Post");
+const Updoot_1 = require("./Updoot");
 let UserEntity = class UserEntity {
     id;
     createdAt;
@@ -20,6 +21,7 @@ let UserEntity = class UserEntity {
     password;
     email;
     posts;
+    updoots;
 };
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
@@ -49,6 +51,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => Post_1.PostEntity, (post) => post.creator),
     __metadata("design:type", Array)
 ], UserEntity.prototype, "posts", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => Updoot_1.Updoot, (updoot) => updoot.user),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "updoots", void 0);
 UserEntity = __decorate([
     (0, typeorm_1.Entity)()
 ], UserEntity);

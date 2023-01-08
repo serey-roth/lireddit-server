@@ -7,6 +7,7 @@ import {
     OneToMany, 
 } from "typeorm";
 import { PostEntity as Post } from "./Post";
+import { Updoot } from "./Updoot";
 
 @Entity()
 export class UserEntity {
@@ -32,4 +33,7 @@ export class UserEntity {
 
     @OneToMany(() => Post, (post) => post.creator)
     posts: Post[];
+
+    @OneToMany(() => Updoot, (updoot) => updoot.user)
+    updoots: Updoot[]; //kinda like upvotes --> a user can have many upvotes
 }
