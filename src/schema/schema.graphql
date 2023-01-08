@@ -61,4 +61,5 @@ type Mutation {
     createPost(input: PostInput): Post!
     updatePost(id: Int!, title: String): Post
     deletePost(id: Int!): Boolean!
+    vote(postId: Int!, value: Int!): Boolean!
 }
