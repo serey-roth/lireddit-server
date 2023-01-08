@@ -80,23 +80,42 @@ const PostResolver = {
             return true;
         },
         async vote(_, { postId, value }, { req }) {
+            const { userId } = req.session;
             const isUpdoot = value !== -1;
             const realValue = isUpdoot ? 1 : -1;
-            const { userId } = req.session;
-            const updoot = AppDataSource_1.dataManager.create(Updoot_1.Updoot, {
-                value: realValue,
-                userId,
-                postId
-            });
-            try {
-                await AppDataSource_1.dataManager.transaction(async (entityManager) => {
-                    await entityManager.save(updoot);
-                    await entityManager.increment(Post_1.PostEntity, { id: postId }, "points", realValue);
-                });
-                return true;
+            const existingUpdoot = await AppDataSource_1.dataManager.findOneBy(Updoot_1.Updoot, { postId, userId });
+            if (existingUpdoot && existingUpdoot.value !== realValue) {
+                try {
+                    await AppDataSource_1.dataManager.transaction(async (entityManager) => {
+                        await entityManager.update(Updoot_1.Updoot, { postId, userId }, { value: realValue });
+                        await entityManager.increment(Post_1.PostEntity, { id: postId }, "points", 2 * realValue);
+                    });
+                    return true;
+                }
+                catch (error) {
+                    console.log(error.message);
+                    return false;
+                }
             }
-            catch (error) {
-                console.log(error.message);
+            else if (!existingUpdoot) {
+                const updoot = AppDataSource_1.dataManager.create(Updoot_1.Updoot, {
+                    value: realValue,
+                    userId,
+                    postId
+                });
+                try {
+                    await AppDataSource_1.dataManager.transaction(async (entityManager) => {
+                        await entityManager.save(updoot);
+                        await entityManager.increment(Post_1.PostEntity, { id: postId }, "points", realValue);
+                    });
+                    return true;
+                }
+                catch (error) {
+                    console.log(error.message);
+                    return false;
+                }
+            }
+            else {
                 return false;
             }
         }

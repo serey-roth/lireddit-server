@@ -86,37 +86,66 @@ const PostResolver: Resolvers = {
             return true;
         },
         async vote(_, { postId, value }, { req }) {
+            const { userId } = req.session;
             const isUpdoot = value !== -1;
             const realValue = isUpdoot ? 1 : -1;
-            const { userId } = req.session;
-            const updoot = dataManager.create(Updoot, {
-                value: realValue,
-                userId,
-                postId
-            });
-            try {
-                /* raw sql
-                    query(`
-                    START TRANSACTION
-                        insert into updoot ("userId", "postId", "value")
-                        values ($1, $2, $3)
-                        update post_entity
-                        set points = points + $4
-                        where post_entity.id = $5
-                    COMMIT
-                    `, [userId, postId, realValue, realValue, postId])
-                */
-                await dataManager.transaction(async (entityManager) => {
-                    await entityManager.save(updoot);
-                    await entityManager.increment(Post, 
-                        { id: postId }, 
-                        "points",
-                        realValue
-                    );
-                })
-                return true;
-            } catch (error) {
-                console.log(error.message);
+
+            const existingUpdoot = await dataManager.findOneBy(Updoot, 
+                { postId, userId });
+
+            //the user has voted on the post before and they are
+            //changing their vote
+            if (existingUpdoot && existingUpdoot.value !== realValue) {
+                try {
+                    await dataManager.transaction(async (entityManager) => {
+                        await entityManager.update(Updoot, 
+                            { postId, userId},
+                            { value: realValue });
+                        await entityManager.increment(Post, 
+                            { id: postId }, 
+                            "points",
+                            2 * realValue // if current is 1, downdoot gives -1 vice versa
+                        );
+                    })
+                    return true;
+                } catch (error) {
+                    console.log(error.message);
+                    return false;
+                }
+            // the user has never voted on this post
+            } else if (!existingUpdoot) {
+                const updoot = dataManager.create(Updoot, {
+                    value: realValue,
+                    userId,
+                    postId
+                });
+                try {
+                    /* raw sql
+                        query(`
+                        START TRANSACTION
+                            insert into updoot ("userId", "postId", "value")
+                            values ($1, $2, $3)
+                            update post_entity
+                            set points = points + $4
+                            where post_entity.id = $5
+                        COMMIT
+                        `, [userId, postId, realValue, realValue, postId])
+                    */
+                    await dataManager.transaction(async (entityManager) => {
+                        await entityManager.save(updoot);
+                        await entityManager.increment(Post, 
+                            { id: postId }, 
+                            "points",
+                            realValue
+                        );
+                    })
+                    return true;
+                } catch (error) {
+                    console.log(error.message);
+                    return false;
+                }
+            //the user try to vote on the same post again
+            } else {
                 return false;
             }
         }
