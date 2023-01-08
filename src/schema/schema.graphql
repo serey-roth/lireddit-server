@@ -11,6 +11,7 @@ type Post {
     creatorId: Int!
     text: String!
     points: Int!
+    textSnippet: String!
 }
 
 input UsernamePasswordInput {
