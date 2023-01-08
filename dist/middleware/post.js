@@ -7,6 +7,7 @@ exports.postMiddleware = {
         createPost: isAuth_1.isAuth,
         updatePost: isAuth_1.isAuth,
         deletePost: isAuth_1.isAuth,
+        vote: isAuth_1.isAuth,
     }
 };
 //# sourceMappingURL=post.js.map
