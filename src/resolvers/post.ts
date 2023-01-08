@@ -1,11 +1,25 @@
 import { PostEntity as Post } from "../entities/Post";
-import { dataManager } from '../AppDataSource';
+import AppDataSource, { dataManager } from '../AppDataSource';
 import { Resolvers } from "../util/resolvers-types";
 
 const PostResolver: Resolvers = { 
     Query: {
-        posts() {
-            return dataManager.find(Post);
+        //cursor is the starting point to execute pagination
+        async posts(_, { limit, cursor }) {
+            const realLimit = Math.min(50, limit);
+            const query = AppDataSource
+            .getRepository(Post)
+            .createQueryBuilder("p")
+            .orderBy('"createdAt"', "DESC")
+            .take(realLimit)
+
+            if (cursor) {
+                query.where('"createdAt" < :cursor', { //get the next post from cursor
+                    cursor: new Date(parseInt(cursor)),
+                })
+            }
+
+            return query.getMany();
         },
         post(_, args) {
             return dataManager.findOneBy(Post, { id: args.id });    
