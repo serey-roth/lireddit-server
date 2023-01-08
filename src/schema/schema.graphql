@@ -14,6 +14,11 @@ type Post {
     textSnippet: String!
 }
 
+type PaginatedPosts {
+    posts: [Post!]!
+    hasMore: Boolean!
+}
+
 input UsernamePasswordInput {
     username: String!
     password: String!
@@ -43,7 +48,7 @@ type User  {
 
 type Query {
     me: User
-    posts(limit: Int!, cursor: String): [Post!]
+    posts(limit: Int!, cursor: String): PaginatedPosts
     post(id: Int!): Post
 }
 
