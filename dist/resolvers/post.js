@@ -28,21 +28,28 @@ const AppDataSource_1 = __importStar(require("../AppDataSource"));
 const Updoot_1 = require("../entities/Updoot");
 const PostResolver = {
     Query: {
-        async posts(_, { limit, cursor }) {
+        async posts(_, { limit, cursor }, { req }) {
             const realLimit = Math.min(50, limit);
             const paginatedLimit = Math.min(50, limit) + 1;
-            const query = AppDataSource_1.default
-                .getRepository(Post_1.PostEntity)
-                .createQueryBuilder("post")
-                .innerJoinAndSelect("post.creator", "u", 'post."creatorId" = u.id')
-                .orderBy('post."createdAt"', "DESC")
-                .limit(paginatedLimit);
-            if (cursor) {
-                query.where('post."createdAt" < :cursor', {
-                    cursor: new Date(parseInt(cursor)),
-                });
-            }
-            const posts = await query.getMany();
+            const replacements = [paginatedLimit, req.session.userId];
+            if (cursor)
+                replacements.push(cursor);
+            const posts = await AppDataSource_1.default.query(`
+                select p.*,
+                json_build_object( 
+                    'id', u.id,
+                    'username', u.username,
+                    'email', u.email
+                ) creator,
+                ${req.session.userId ?
+                '(select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus"' :
+                'null as "voteStatus"'}
+                from post_entity p
+                inner join user_entity u on u.id = p."creatorId"
+                ${cursor ? `where p."createdAt" < $3` : ''}
+                order by p."createdAt" DESC
+                limit $1
+            `, replacements);
             return {
                 posts: posts.slice(0, realLimit),
                 hasMore: posts.length === paginatedLimit,
