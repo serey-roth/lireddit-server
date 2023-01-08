@@ -18,9 +18,10 @@ let PostEntity = class PostEntity {
     updatedAt;
     title;
     creatorId;
-    creator;
     text;
     points;
+    creator;
+    updoots;
 };
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
@@ -43,10 +44,6 @@ __decorate([
     __metadata("design:type", Number)
 ], PostEntity.prototype, "creatorId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => User_1.UserEntity, (user) => user.posts),
-    __metadata("design:type", User_1.UserEntity)
-], PostEntity.prototype, "creator", void 0);
-__decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], PostEntity.prototype, "text", void 0);
@@ -54,6 +51,14 @@ __decorate([
     (0, typeorm_1.Column)({ type: "int", default: 0 }),
     __metadata("design:type", Number)
 ], PostEntity.prototype, "points", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => User_1.UserEntity, (user) => user.posts),
+    __metadata("design:type", User_1.UserEntity)
+], PostEntity.prototype, "creator", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => User_1.UserEntity, (user) => user.posts),
+    __metadata("design:type", User_1.UserEntity)
+], PostEntity.prototype, "updoots", void 0);
 PostEntity = __decorate([
     (0, typeorm_1.Entity)()
 ], PostEntity);

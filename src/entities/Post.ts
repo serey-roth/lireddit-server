@@ -25,12 +25,16 @@ export class PostEntity {
     @Column()
     creatorId: number;
 
-    @ManyToOne(() => User, (user) => user.posts)
-    creator: User;
-
     @Column()
     text!: string;
 
     @Column({ type: "int", default: 0 })
     points!: number;
+
+
+    @ManyToOne(() => User, (user) => user.posts)
+    creator: User;
+
+    @ManyToOne(() => User, (user) => user.posts)
+    updoots: User;
 }
