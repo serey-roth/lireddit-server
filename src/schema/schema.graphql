@@ -60,7 +60,7 @@ type Mutation {
     register(options: UsernamePasswordInput!): UserResponse!
     logout: Boolean!
     createPost(input: PostInput): Post!
-    updatePost(id: Int!, title: String): Post
+    updatePost(id: Int!, title: String!, text: String!): Post
     deletePost(id: Int!): Boolean!
     vote(postId: Int!, value: Int!): Boolean!
 }
