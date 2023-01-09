@@ -11,8 +11,17 @@ const PostResolver: Resolvers = {
             const paginatedLimit = Math.min(50, limit) + 1;//for hasMore
             
             // raw sql for fetching paginated posts       
-            const replacements: any[] = [paginatedLimit, req.session.userId];
-            if (cursor) replacements.push(cursor);
+            const replacements: any[] = [paginatedLimit];
+
+            if (req.session.userId) {
+                replacements.push(req.session.userId);
+            }
+
+            let cursorIdx = 3;
+            if (cursor) {
+                replacements.push(cursor);
+                cursorIdx = replacements.length;
+            }
 
             //if we don't use json_build_object, all the creator data appear in the 
             //top level of post
@@ -30,7 +39,7 @@ const PostResolver: Resolvers = {
                 }
                 from post_entity p
                 inner join user_entity u on u.id = p."creatorId"
-                ${cursor ? `where p."createdAt" < $3` : ''}
+                ${cursor ? `where p."createdAt" < $${cursorIdx}` : ''}
                 order by p."createdAt" DESC
                 limit $1
             `, replacements);

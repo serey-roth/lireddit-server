@@ -31,9 +31,15 @@ const PostResolver = {
         async posts(_, { limit, cursor }, { req }) {
             const realLimit = Math.min(50, limit);
             const paginatedLimit = Math.min(50, limit) + 1;
-            const replacements = [paginatedLimit, req.session.userId];
-            if (cursor)
+            const replacements = [paginatedLimit];
+            if (req.session.userId) {
+                replacements.push(req.session.userId);
+            }
+            let cursorIdx = 3;
+            if (cursor) {
                 replacements.push(cursor);
+                cursorIdx = replacements.length;
+            }
             const posts = await AppDataSource_1.default.query(`
                 select p.*,
                 json_build_object( 
@@ -46,7 +52,7 @@ const PostResolver = {
                 'null as "voteStatus"'}
                 from post_entity p
                 inner join user_entity u on u.id = p."creatorId"
-                ${cursor ? `where p."createdAt" < $3` : ''}
+                ${cursor ? `where p."createdAt" < $${cursorIdx}` : ''}
                 order by p."createdAt" DESC
                 limit $1
             `, replacements);
