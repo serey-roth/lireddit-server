@@ -6,40 +6,23 @@ import { Resolvers } from "../util/resolvers-types";
 const PostResolver: Resolvers = { 
     Query: {
         //cursor is the starting point to execute pagination
-        async posts(_, { limit, cursor }, { req }) {
+        async posts(_, { limit, cursor }) {
             const realLimit = Math.min(50, limit);
             const paginatedLimit = Math.min(50, limit) + 1;//for hasMore
             
             // raw sql for fetching paginated posts       
             const replacements: any[] = [paginatedLimit];
 
-            if (req.session.userId) {
-                replacements.push(req.session.userId);
-            }
-
-            let cursorIdx = 3;
             if (cursor) {
                 replacements.push(new Date(parseInt(cursor)));
-                cursorIdx = replacements.length;
             }
 
             //if we don't use json_build_object, all the creator data appear in the 
             //top level of post
             const posts = await AppDataSource.query(`
-                select p.*,
-                json_build_object( 
-                    'id', u.id,
-                    'username', u.username,
-                    'email', u.email
-                ) creator,
-                ${
-                    req.session.userId ? 
-                    '(select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus"' :
-                    'null as "voteStatus"'
-                }
+                select p.*
                 from post_entity p
-                inner join user_entity u on u.id = p."creatorId"
-                ${cursor ? `where p."createdAt" < $${cursorIdx}` : ''}
+                ${cursor ? `where p."createdAt" < $2` : ''}
                 order by p."createdAt" DESC
                 limit $1
             `, replacements);
@@ -77,11 +60,8 @@ const PostResolver: Resolvers = {
                 hasMore: posts.length === paginatedLimit,
             };
         },
-        post(_, args) {
-            return dataManager.findOne(Post, {
-                relations: ['creator'], //simple left join creator to post
-                where: { id: args.id }
-            });
+        post(_, { id }) {
+            return dataManager.findOneBy(Post, { id });
         }
     },
     Mutation: {
@@ -108,7 +88,6 @@ const PostResolver: Resolvers = {
             .returning("*")
             .execute();
 
-            console.log(results.raw[0])
             return results.raw[0];
         },
         async deletePost(_, { id }, { req }) {
@@ -203,6 +182,22 @@ const PostResolver: Resolvers = {
     Post: {
         //this would be a field resolver for type-graphql
         textSnippet: (post) => post.text.slice(0, 50), 
+        creator: async ({ creatorId }, _, { userLoader }) => {
+            //run a sql query for every post -> poor performance for large data
+            //const user = await dataManager.findOneBy(User, { id: post.creatorId })
+            return userLoader.load(creatorId); //batches the queries for the all the posts into one function call
+        },
+        voteStatus: async ({ id }, _, { updootLoader, req }) => {
+            if (!req.session.userId) {
+                return null;
+            }
+            console.log('hehre')
+            const updoot = await updootLoader.load({
+                postId: id,
+                userId: req.session.userId,
+            });
+            return updoot ? updoot.value : null;
+        }
     }
 }
 

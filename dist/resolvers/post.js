@@ -28,31 +28,17 @@ const Post_1 = require("../entities/Post");
 const Updoot_1 = require("../entities/Updoot");
 const PostResolver = {
     Query: {
-        async posts(_, { limit, cursor }, { req }) {
+        async posts(_, { limit, cursor }) {
             const realLimit = Math.min(50, limit);
             const paginatedLimit = Math.min(50, limit) + 1;
             const replacements = [paginatedLimit];
-            if (req.session.userId) {
-                replacements.push(req.session.userId);
-            }
-            let cursorIdx = 3;
             if (cursor) {
                 replacements.push(new Date(parseInt(cursor)));
-                cursorIdx = replacements.length;
             }
             const posts = await AppDataSource_1.default.query(`
-                select p.*,
-                json_build_object( 
-                    'id', u.id,
-                    'username', u.username,
-                    'email', u.email
-                ) creator,
-                ${req.session.userId ?
-                '(select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus"' :
-                'null as "voteStatus"'}
+                select p.*
                 from post_entity p
-                inner join user_entity u on u.id = p."creatorId"
-                ${cursor ? `where p."createdAt" < $${cursorIdx}` : ''}
+                ${cursor ? `where p."createdAt" < $2` : ''}
                 order by p."createdAt" DESC
                 limit $1
             `, replacements);
@@ -61,11 +47,8 @@ const PostResolver = {
                 hasMore: posts.length === paginatedLimit,
             };
         },
-        post(_, args) {
-            return AppDataSource_1.dataManager.findOne(Post_1.PostEntity, {
-                relations: ['creator'],
-                where: { id: args.id }
-            });
+        post(_, { id }) {
+            return AppDataSource_1.dataManager.findOneBy(Post_1.PostEntity, { id });
         }
     },
     Mutation: {
@@ -92,7 +75,6 @@ const PostResolver = {
             })
                 .returning("*")
                 .execute();
-            console.log(results.raw[0]);
             return results.raw[0];
         },
         async deletePost(_, { id }, { req }) {
@@ -142,6 +124,20 @@ const PostResolver = {
     },
     Post: {
         textSnippet: (post) => post.text.slice(0, 50),
+        creator: async ({ creatorId }, _, { userLoader }) => {
+            return userLoader.load(creatorId);
+        },
+        voteStatus: async ({ id }, _, { updootLoader, req }) => {
+            if (!req.session.userId) {
+                return null;
+            }
+            console.log('hehre');
+            const updoot = await updootLoader.load({
+                postId: id,
+                userId: req.session.userId,
+            });
+            return updoot ? updoot.value : null;
+        }
     }
 };
 exports.default = PostResolver;
