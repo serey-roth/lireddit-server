@@ -109,7 +109,27 @@ const PostResolver: Resolvers = {
             return post;
         },
         async deletePost(_, { id }, { req }) {
-            await dataManager.delete(Post, { id, creatorId: req.session.userId }); //can only delete your own post
+            /* not using CASCADE 
+            const post = await dataManager.findOneBy(Post, { id });
+
+            if (!post) {
+                return false;
+            }
+
+            if (post.creatorId !== req.session.userId) {
+                throw new GraphQLError('not authorized', {
+                    extensions: {
+                        code: "UNAUTHORIZED",
+                    }
+                })
+            }
+
+            await dataManager.transaction(async (tm) => {
+                await tm.delete(Updoot, { postId: id });
+                await tm.delete(Post, { id, creatorId: req.session.userId }); //can only delete your own post
+            }) */
+
+            await dataManager.delete(Post, { id, creatorId: req.session.userId });
             return true;
         },
         async vote(_, { postId, value }, { req }) {
