@@ -2,7 +2,6 @@ import {
     Entity, 
     Column, 
     ManyToOne,
-    OneToMany,
     PrimaryColumn,
 } from "typeorm";
 import { UserEntity as User } from "./User";
@@ -30,9 +29,8 @@ export class Updoot {
     @PrimaryColumn()
     postId: number;
 
-    @ManyToOne(() => Post, (post) => post.updoots)
+    @ManyToOne(() => Post, (post) => post.updoots, {
+        onDelete: "CASCADE",
+    })
     post: Post;
-
-    @OneToMany(() => Updoot, (updoot) => updoot.post)
-    updoots: Updoot[]; // a post can have many upvotes
 }
