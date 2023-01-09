@@ -21,6 +21,8 @@ const fs_1 = require("fs");
 const graphql_tools_1 = require("graphql-tools");
 const graphql_middleware_1 = require("graphql-middleware");
 const post_2 = require("./middleware/post");
+const createUserLoader_1 = require("./util/createUserLoader");
+const createUpdootLoader_1 = require("./util/createUpdootLoader");
 const main = async () => {
     await AppDataSource_1.default.initialize();
     const app = (0, express_1.default)();
@@ -76,7 +78,9 @@ const main = async () => {
         context: async ({ req, res }) => ({
             req,
             res,
-            redis
+            redis,
+            userLoader: (0, createUserLoader_1.createUserLoader)(),
+            updootLoader: (0, createUpdootLoader_1.createUpdootLoader)(),
         }),
     }));
     app.listen(4040, () => {
