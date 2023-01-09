@@ -62,7 +62,10 @@ const PostResolver = {
             };
         },
         post(_, args) {
-            return AppDataSource_1.dataManager.findOneBy(Post_1.PostEntity, { id: args.id });
+            return AppDataSource_1.dataManager.findOne(Post_1.PostEntity, {
+                relations: ['creator'],
+                where: { id: args.id }
+            });
         }
     },
     Mutation: {
@@ -88,8 +91,8 @@ const PostResolver = {
             }
             return post;
         },
-        async deletePost(_, { id }) {
-            await AppDataSource_1.dataManager.delete(Post_1.PostEntity, id);
+        async deletePost(_, { id }, { req }) {
+            await AppDataSource_1.dataManager.delete(Post_1.PostEntity, { id, creatorId: req.session.userId });
             return true;
         },
         async vote(_, { postId, value }, { req }) {

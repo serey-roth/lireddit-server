@@ -78,7 +78,10 @@ const PostResolver: Resolvers = {
             };
         },
         post(_, args) {
-            return dataManager.findOneBy(Post, { id: args.id });    
+            return dataManager.findOne(Post, {
+                relations: ['creator'], //simple left join creator to post
+                where: { id: args.id }
+            });
         }
     },
     Mutation: {
@@ -105,8 +108,8 @@ const PostResolver: Resolvers = {
             }
             return post;
         },
-        async deletePost(_, { id }) {
-            await dataManager.delete(Post, id);
+        async deletePost(_, { id }, { req }) {
+            await dataManager.delete(Post, { id, creatorId: req.session.userId }); //can only delete your own post
             return true;
         },
         async vote(_, { postId, value }, { req }) {
