@@ -17,6 +17,8 @@ import { makeExecutableSchema } from "graphql-tools";
 import { applyMiddleware } from "graphql-middleware";
 import { postMiddleware } from "./middleware/post";
 import { MyContext } from "./types";
+import { createUserLoader } from "./util/createUserLoader";
+import { createUpdootLoader } from "./util/createUpdootLoader";
 
 const main = async () => {
     await AppDataSource.initialize();
@@ -89,7 +91,9 @@ const main = async () => {
             context: async ({ req, res }): Promise<MyContext> => ({ 
                 req, 
                 res,
-                redis
+                redis,
+                userLoader: createUserLoader(),
+                updootLoader: createUpdootLoader(),
             }), //share context with all resolvers in the apollo server
         }));
 
