@@ -23,8 +23,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Post_1 = require("../entities/Post");
 const AppDataSource_1 = __importStar(require("../AppDataSource"));
+const Post_1 = require("../entities/Post");
 const Updoot_1 = require("../entities/Updoot");
 const PostResolver = {
     Query: {
@@ -37,7 +37,7 @@ const PostResolver = {
             }
             let cursorIdx = 3;
             if (cursor) {
-                replacements.push(cursor);
+                replacements.push(new Date(parseInt(cursor)));
                 cursorIdx = replacements.length;
             }
             const posts = await AppDataSource_1.default.query(`
@@ -81,15 +81,19 @@ const PostResolver = {
                 throw new Error(error.message);
             }
         },
-        async updatePost(_, { title, id }) {
-            const post = await AppDataSource_1.dataManager.findOneBy(Post_1.PostEntity, { id });
-            if (!post) {
-                return null;
-            }
-            if (typeof title !== 'undefined') {
-                await AppDataSource_1.dataManager.update(Post_1.PostEntity, { id }, { title: title === null ? undefined : title });
-            }
-            return post;
+        async updatePost(_, { title, id, text }, { req }) {
+            const results = await AppDataSource_1.default
+                .createQueryBuilder()
+                .update(Post_1.PostEntity)
+                .set({ title, text })
+                .where('id = :id and "creatorId" = :creatorId', {
+                id,
+                creatorId: req.session.userId
+            })
+                .returning("*")
+                .execute();
+            console.log(results.raw[0]);
+            return results.raw[0];
         },
         async deletePost(_, { id }, { req }) {
             await AppDataSource_1.dataManager.delete(Post_1.PostEntity, { id, creatorId: req.session.userId });

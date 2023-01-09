@@ -1,7 +1,7 @@
-import { PostEntity as Post } from "../entities/Post";
 import AppDataSource, { dataManager } from '../AppDataSource';
-import { Resolvers } from "../util/resolvers-types";
+import { PostEntity as Post } from "../entities/Post";
 import { Updoot } from "../entities/Updoot";
+import { Resolvers } from "../util/resolvers-types";
 
 const PostResolver: Resolvers = { 
     Query: {
@@ -19,7 +19,7 @@ const PostResolver: Resolvers = {
 
             let cursorIdx = 3;
             if (cursor) {
-                replacements.push(cursor);
+                replacements.push(new Date(parseInt(cursor)));
                 cursorIdx = replacements.length;
             }
 
@@ -96,17 +96,20 @@ const PostResolver: Resolvers = {
                 throw new Error(error.message)
             }
         },
-        async updatePost(_, { title, id }) {
-            const post = await dataManager.findOneBy(Post, { id });
-            if (!post) {
-                return null;
-            }
-            if (typeof title !== 'undefined') {
-                await dataManager.update(Post, 
-                    { id }, 
-                    { title: title === null ? undefined : title });
-            }
-            return post;
+        async updatePost(_, { title, id, text }, { req }) {
+            const results = await AppDataSource
+            .createQueryBuilder()
+            .update(Post)
+            .set({ title, text })
+            .where('id = :id and "creatorId" = :creatorId', { 
+                id, 
+                creatorId: req.session.userId 
+            })
+            .returning("*")
+            .execute();
+
+            console.log(results.raw[0])
+            return results.raw[0];
         },
         async deletePost(_, { id }, { req }) {
             /* not using CASCADE 
