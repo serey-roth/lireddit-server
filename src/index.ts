@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import dotenv from "dotenv-safe";
 import express from "express";
 import cors from "cors";
 import { json } from "body-parser";
@@ -20,13 +21,16 @@ import { MyContext } from "./types";
 import { createUserLoader } from "./util/createUserLoader";
 import { createUpdootLoader } from "./util/createUpdootLoader";
 
+dotenv.config();
+
 const main = async () => {
     await AppDataSource.initialize();
+    //await AppDataSource.runMigrations();
 
     const app = express();
 
     const RedisStore = connectRedis(session)
-    const redis = new Redis();
+    const redis = new Redis(process.env.REDIS_URL);
 
     const redisStoreOptions: RedisStoreOptions = {
         client: redis,
@@ -36,7 +40,7 @@ const main = async () => {
     app.set("trust proxy", !__prod__);
     app.set("Access-Control-Allow-Origin", [
         "https://studio.apollographql.com", 
-        "http://localhost:3000"
+        process.env.CORS_ORIGIN
     ]);
     app.set("Access-Control-Allow-Credentials", true);
 
@@ -46,7 +50,7 @@ const main = async () => {
           origin: [
             "https://studio.apollographql.com",
             "http://localhost:4040/graphql",
-            "http://localhost:3000"
+            process.env.CORS_ORIGIN
           ],
         })
       );
@@ -61,7 +65,7 @@ const main = async () => {
             sameSite: "lax", //csrf prevention
         },
         saveUninitialized: false,
-        secret: "keyboard cat",
+        secret: process.env.SESSION_SECRET,
         resave: false,
     }));
 
@@ -97,7 +101,7 @@ const main = async () => {
             }), //share context with all resolvers in the apollo server
         }));
 
-    app.listen(4040, () => {
+    app.listen(parseInt(process.env.PORT), () => {
         console.log('Server started on localhost:4040');
     });
 };

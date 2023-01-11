@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
+const dotenv_safe_1 = __importDefault(require("dotenv-safe"));
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = require("body-parser");
@@ -23,11 +24,12 @@ const graphql_middleware_1 = require("graphql-middleware");
 const post_2 = require("./middleware/post");
 const createUserLoader_1 = require("./util/createUserLoader");
 const createUpdootLoader_1 = require("./util/createUpdootLoader");
+dotenv_safe_1.default.config();
 const main = async () => {
     await AppDataSource_1.default.initialize();
     const app = (0, express_1.default)();
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
-    const redis = new ioredis_1.default();
+    const redis = new ioredis_1.default(process.env.REDIS_URL);
     const redisStoreOptions = {
         client: redis,
         disableTouch: true,
@@ -35,7 +37,7 @@ const main = async () => {
     app.set("trust proxy", !constants_1.__prod__);
     app.set("Access-Control-Allow-Origin", [
         "https://studio.apollographql.com",
-        "http://localhost:3000"
+        process.env.CORS_ORIGIN
     ]);
     app.set("Access-Control-Allow-Credentials", true);
     app.use((0, cors_1.default)({
@@ -43,7 +45,7 @@ const main = async () => {
         origin: [
             "https://studio.apollographql.com",
             "http://localhost:4040/graphql",
-            "http://localhost:3000"
+            process.env.CORS_ORIGIN
         ],
     }));
     app.use((0, express_session_1.default)({
@@ -56,7 +58,7 @@ const main = async () => {
             sameSite: "lax",
         },
         saveUninitialized: false,
-        secret: "keyboard cat",
+        secret: process.env.SESSION_SECRET,
         resave: false,
     }));
     const typeDefs = (0, fs_1.readFileSync)('src/schema/schema.graphql', { encoding: 'utf-8' });
@@ -83,7 +85,7 @@ const main = async () => {
             updootLoader: (0, createUpdootLoader_1.createUpdootLoader)(),
         }),
     }));
-    app.listen(4040, () => {
+    app.listen(parseInt(process.env.PORT), () => {
         console.log('Server started on localhost:4040');
     });
 };
