@@ -9,13 +9,12 @@ const Post_1 = require("./entities/Post");
 const User_1 = require("./entities/User");
 const path_1 = __importDefault(require("path"));
 const Updoot_1 = require("./entities/Updoot");
+const dotenv_safe_1 = __importDefault(require("dotenv-safe"));
+dotenv_safe_1.default.config();
 const AppDataSource = new typeorm_1.DataSource({
     type: 'postgres',
-    database: 'lireddit',
-    username: 'serey',
-    password: 'Mombytour123!?',
+    url: process.env.DATABASE_URL,
     logging: true,
-    synchronize: true,
     migrations: [path_1.default.join(__dirname, '/migrations/*')],
     entities: [Post_1.PostEntity, User_1.UserEntity, Updoot_1.Updoot]
 });
