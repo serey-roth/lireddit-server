@@ -1,0 +1,26 @@
+Deploy Backend To Dokku Steps:
+
+1. Get a VPS (virtual private server). In Ben Awad's tutorial,
+he created a droplet on DigitalOcean. It didn't work out for me
+so I chose AWS EC2 instance. 
+-- With AWS ec2, choose Ubuntu ARM64 for server because our docker images will
+have ARM64 as the architecture due to our OS system (macOS)
+2. ssh into the instance
+3. install docker and dokku in the VPS
+postgres and redis (look at the official docs for dokku)
+4. create app with dokku and install plugins such as postgres and redis
+and link them altogether (check official dokku docs)
+5. set up DockerFile and .dockerignore file locally in node
+7. build with command 'docker build -t <docker-account>/<app-name>:<app-version> .'
+8. push to Docker hub with 'docker push <docker-account>/<app-name>:<app-version>'
+9. in the VPS, pull docker image 
+10. initialize app repository from docker image 'dokku git:from-image
+<dokku-app-name> <docker-image-name>
+-- this will deploy the docker image
+11. set up custom domain 
+-- change proxy http port
+-- encrypt custom domain: don't panic if there is 'certificate cannot be found' error
+---- the dns for the custom domain is still propagating
+12. all done
+13. every time you make changes to your local files, rebuild and push the docker image locally;
+-- pull and deploy the new image in the VPS
