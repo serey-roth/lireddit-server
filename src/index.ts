@@ -37,7 +37,7 @@ const main = async () => {
         disableTouch: true,//keep the session alive forever
     }
 
-    app.set("trust proxy", !__prod__);
+    app.set("trust proxy", 1);
     app.set("Access-Control-Allow-Origin", [
         "https://studio.apollographql.com", 
         process.env.CORS_ORIGIN
@@ -63,6 +63,7 @@ const main = async () => {
             httpOnly: true,
             secure: __prod__, //cookie only works in https
             sameSite: "lax", //csrf prevention
+            domain: __prod__ ? '.sereyratanakroth.com' : undefined,
         },
         saveUninitialized: false,
         secret: process.env.SESSION_SECRET,
@@ -80,7 +81,7 @@ const main = async () => {
 
     const apolloServer = new ApolloServer({
         schema: schemaWithMiddleWare,
-        includeStacktraceInErrorResponses: false, //!__prod__
+        includeStacktraceInErrorResponses: !__prod__,
         plugins: [
             ApolloServerPluginLandingPageLocalDefault({
                 includeCookies: true,
